@@ -4,6 +4,15 @@ from plugins.containers.podman import Podman
 import time
 
 @pytest.fixture
+def config() -> dict:
+    return {"container_name": "test_nba_database",
+        "postgres_user": "nba",
+        "postgres_db": "nba",
+        "postgres_password": "nba",
+        "host": "localhost",
+        "port": 5433}
+
+@pytest.fixture
 def golden_state_values() -> tuple:
     golden_state = {
         "id":10,
@@ -35,6 +44,7 @@ def steph_curry_values() -> tuple:
     }
     return [tuple(steph_curry.values())]
 
+
 @pytest.fixture
 def setup():
     Podman.create_postgres_container(
@@ -49,18 +59,17 @@ def setup():
     Podman.kill_all_containers()
 
 
-def test_nba_database(setup, golden_state_values, steph_curry_values):
+def test_nba_database(setup, config, golden_state_values, steph_curry_values):
     #basic database test
-    with Postgres(dbname="nba",
-                  user="nba",
-                  password="nba",
-                  host="localhost",
-                  port=5433) as cursor:
+    with Postgres(dbname=config['postgres_db'],
+                  user=config['postgres_user'],
+                  password=config['postgres_password'],
+                  host=config["host"],
+                  port=config['port']) as cursor:
         create_teams_table(cursor)
         insert_teams(cursor, golden_state_values)
         cursor.execute("SELECT COUNT(ID) FROM teams;")
         team_count = cursor.fetchone()[0]
-        print(team_count)
         create_players_table(cursor)
         insert_players(cursor, steph_curry_values)
         cursor.execute("SELECT COUNT(ID) FROM players;")

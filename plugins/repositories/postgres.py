@@ -2,7 +2,6 @@
 from psycopg2.extras import execute_values
 import psycopg2
 from typing import List
-from pprint import pprint
 
 
 class Postgres:
